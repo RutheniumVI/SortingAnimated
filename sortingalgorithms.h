@@ -6,12 +6,11 @@
 template <typename T>
 class SortingAlgorithms
 {
+
 public:
     SortingAlgorithms(){
-
     }
-    static void swap(T &a, T &b) {
-        T::swap();
+    virtual void swap(T &a, T &b) {
         T temp = a;
         a = b;
         b = temp;
@@ -39,7 +38,7 @@ public:
         }
         arr=arr2;
     }
-    static void SelectionSort2(std::vector<T> &arr)
+    void SelectionSort2(std::vector<T> &arr)
     {
 
         int len  = arr.size();

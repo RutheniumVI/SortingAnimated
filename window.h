@@ -32,6 +32,7 @@ class QGraphicsRectWidget : public QGraphicsWidget
 private:
     QColor color = Qt::blue;
     int val;
+    qreal anim_x, anim_y;
 public:
     QGraphicsRectWidget(int value) : QGraphicsWidget(){
         val = value;
@@ -43,6 +44,18 @@ public:
         painter->fillRect(rect(), color);
         painter->drawRect(rect());
 
+    }
+    qreal getAnimX(){
+        return anim_x;
+    }
+    qreal getAnimY(){
+        return anim_y;
+    }
+    void setAnimX(qreal x){
+        anim_x = x;
+    }
+    void setAnimY(qreal y){
+        anim_y = y;
     }
     QColor getColor(){
         return color;
@@ -58,11 +71,13 @@ public:
     }
 
 };
-
-class GraphicsScene : public QGraphicsScene, SortingAlgorithms<QGraphicsRectWidget> {
+class GraphicsScene : public QGraphicsScene, SortingAlgorithms<QGraphicsRectWidget*> {
     Q_OBJECT
 public:
-    GraphicsScene(int num, qreal x, qreal y, qreal width, qreal height, QObject *parent = nullptr) : QGraphicsScene(x, y, width, height, parent){
+    GraphicsScene(int num, qreal x, qreal y, qreal width, qreal height, QObject *parent = nullptr)
+        : QGraphicsScene(x, y, width, height, parent)//,
+        //  SortingAlgorithms()
+    {
         std::vector<int> temp_val(num);
         for(int i=0;i<num;i++){temp_val[i]=i;}
         std::random_shuffle(temp_val.begin(), temp_val.end(), randomizer);
@@ -71,6 +86,8 @@ public:
             rec_width = width/recToWindowWidthRatio;
             QGraphicsRectWidget * rec = new QGraphicsRectWidget(temp_val[i]);
             rec->setGeometry(i*rec_width, height-((temp_val[i]+1)*rec_height_multiplier), rec_width,(temp_val[i]+1)*rec_height_multiplier);
+            rec->setAnimX(rec->x());
+            rec->setAnimY(rec->y());
             setBackgroundBrush(Qt::black);
             addItem(rec);
             rectangles.push_back(rec);
@@ -95,24 +112,30 @@ private:
     QPropertyAnimation * colorAnim1, * colorAnim2;
     int animationSpeed = 1;
 
+    //SortingAlgorithms<QGraphicsRectWidget*> algo;
 private:
-    void swap(QGraphicsRectWidget* &a, QGraphicsRectWidget* &b) {
+    void swap(QGraphicsRectWidget* &a, QGraphicsRectWidget* &b) override {
+        if(a==b)
+            return;
         QGraphicsRectWidget* temp = a;
         a = b;
         b = temp;
-        animateSwap(a, b);
+        animateSwap(b, a);
     }
 private slots:
     void slotButtonClicked(bool checked){
-        SortingAlgorithms<QGraphicsRectWidget*>::SelectionSort2(rectangles);
+//        swap(rectangles[0], rectangles[1]);
+//        swap(rectangles[0], rectangles[4]);
+//        swap(rectangles[0], rectangles[6]);
+        SelectionSort2(rectangles);
         animationQueue->start();
     }
 public:
-    void animateSwap(QGraphicsRectWidget* a, QGraphicsRectWidget* b){
+    void animateSwap(QGraphicsRectWidget* &a, QGraphicsRectWidget* &b){
         animationGrp = new QParallelAnimationGroup(animationQueue);
 
-        anim1 = new QPropertyAnimation();
-        anim2 = new QPropertyAnimation();
+        anim1 = new QPropertyAnimation;
+        anim2 = new QPropertyAnimation;
 
         anim1->setPropertyName("geometry");
         anim2->setPropertyName("geometry");
@@ -133,19 +156,23 @@ public:
 
         anim1->setDuration(1000);
         anim1->setTargetObject(a);
-        anim1->setStartValue(QRect(a->geometry().x(),
+        anim1->setStartValue(QRect(a->getAnimX(),
                              a->geometry().y(), a->geometry().width(), a->geometry().height()));
-        anim1->setEndValue(QRect(b->geometry().x(),
+        anim1->setEndValue(QRect(b->getAnimX(),
                            a->geometry().y(), a->geometry().width(), a->geometry().height()));
+
 
         anim2->setDuration(1000);
         anim2->setTargetObject(b);
-        anim2->setStartValue(QRect(b->geometry().x(),
+        anim2->setStartValue(QRect(b->getAnimX(),
                              b->geometry().y(), b->geometry().width(), b->geometry().height()));
-        anim2->setEndValue(QRect(a->geometry().x(),
+        anim2->setEndValue(QRect(a->getAnimX(),
                            b->geometry().y(), b->geometry().width(), b->geometry().height()));
 
-
+        qreal temp = a->getAnimX();
+        //qreal temp2 = b->getAnimX();
+        a->setAnimX(b->getAnimX());
+        b->setAnimX(temp);
         colorAnim1->setDuration(1000);
         colorAnim1->setTargetObject((*a < *b) ? a:b);
         colorAnim1->setStartValue(QColor(Qt::red));
@@ -158,7 +185,7 @@ public:
         colorAnim2->setStartValue(QColor(Qt::green));
         colorAnim2->setEndValue(QColor(Qt::blue));
 
-        animationQueue->addAnimation(animationGrp);
+        //animationQueue->addAnimation(animationGrp);
 
     }
 };
