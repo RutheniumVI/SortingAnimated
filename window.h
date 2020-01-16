@@ -127,7 +127,7 @@ private slots:
 //        swap(rectangles[0], rectangles[1]);
 //        swap(rectangles[0], rectangles[4]);
 //        swap(rectangles[0], rectangles[6]);
-        SelectionSort2(rectangles);
+        SelectionSort(rectangles);
         animationQueue->start();
     }
 public:

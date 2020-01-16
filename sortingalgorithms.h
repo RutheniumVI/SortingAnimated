@@ -15,30 +15,7 @@ public:
         a = b;
         b = temp;
     }
-    static void SelectionSort(std::vector<T> &arr)
-    {
-
-        int len  = arr.size();
-        std::vector<T> arr2;
-        T lowest;
-        int lowest_index;
-        for(int i=0;i<len;i++){
-            lowest  =  arr[0];
-            lowest_index = 0;
-            for(int j=0;j<arr.size();j++){
-                //int a = arr[j]->value();
-                if(*(arr[j])<*lowest){
-                    lowest = arr[j];
-                    lowest_index = j;
-                }
-            }
-
-            arr2.push_back(lowest);
-            arr.erase(arr.begin()+lowest_index);
-        }
-        arr=arr2;
-    }
-    void SelectionSort2(std::vector<T> &arr)
+    void SelectionSort(std::vector<T> &arr)
     {
 
         int len  = arr.size();
